@@ -18,3 +18,10 @@ notifications:
       - cyberfuzzapps@gmail.com
     on_success: never # default: change
     on_failure: always # default: always
+
+env:
+
+  global:
+
+    - CODECOV_TOKEN="1143cab0-2938-4c21-b3b3-1a54053d12b8"
+
