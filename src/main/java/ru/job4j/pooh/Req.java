@@ -3,15 +3,10 @@ package ru.job4j.pooh;
 import java.util.Map;
 
 /**
- * Req - класс служит для парсинга входящего сообщения.
+ * Класс Req служит для парсинга входящего сообщения от клиента.
  *
- * method - GET или POST. Он указывает на тип запроса.
- *
- * mode - указывает на режим работы: queue или topic.
- *
- * queue - имя очереди.
- *
- * text - содержимое запроса.
+ * @author Evgeniy Zaytsev
+ * @version 1.0
  */
 public class Req {
     private final String method;
@@ -19,6 +14,14 @@ public class Req {
     private final String queue;
     private final Map<String, String> params;
 
+    /**
+     * Конструктор Req.
+     *
+     * @param method - GET или POST. Он указывает на тип запроса.
+     * @param mode   - указывает на режим работы: queue или topic.
+     * @param queue  - имя очереди.
+     * @param params - содержимое запроса.
+     */
     public Req(String method, String mode, String queue, Map<String, String> params) {
         this.method = method;
         this.mode = mode;
@@ -28,15 +31,21 @@ public class Req {
 
     public static Req of(String content) {
         String[] lines = content.split(System.lineSeparator());
-        String[] methodMode = lines[0].split(" ");
-        String method = methodMode[0];
-        String[] modeQueue = methodMode[1].split("/");
-        String mode = modeQueue[1];
-        String queueName = modeQueue[2];
+        String[] methodAndMode = lines[0].split(" ");
+        String method = methodAndMode[0];
+        String[] modeAndQueue = methodAndMode[1].split("/");
+        String mode = modeAndQueue[1];
+        String queueName = modeAndQueue[2];
         Map<String, String> map = null;
         if ("POST".equals(method)) {
             String[] text = lines[lines.length - 1].split("=");
             map = Map.of(text[0], text[1]);
+        } else if ("GET".equals(method) && "queue".equals(mode)) {
+            map = Map.of();
+        } else if ("GET".equals(method) && "topic".equals(mode)) {
+            if (modeAndQueue.length > 3) {
+                map = Map.of("UserId", modeAndQueue[3]);
+            }
         }
         return new Req(method, mode, queueName, map);
     }
@@ -55,5 +64,9 @@ public class Req {
 
     public String param(String key) {
         return params.get(key);
+    }
+
+    public Map<String, String> getParams() {
+        return params;
     }
 }

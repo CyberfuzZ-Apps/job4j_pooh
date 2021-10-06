@@ -11,9 +11,19 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Класс PoohServer запускает сервер, читает входящие запросы от клиента
+ * и отсылает обработанные ответы обратно клиенту.
+ *
+ * @author Evgeniy Zaytsev
+ * @version 1.0
+ */
 public class PoohServer {
     private final HashMap<String, Service> modes = new HashMap<>();
 
+    /**
+     * Запускает сервер.
+     */
     public void start() {
         modes.put("queue", new QueueService());
         modes.put("topic", new TopicService());
@@ -29,9 +39,10 @@ public class PoohServer {
                         byte[] buff = new byte[1_000_000];
                         var total = input.read(buff);
                         var content = new String(Arrays.copyOfRange(buff, 0, total), StandardCharsets.UTF_8);
+                        System.out.println(content);
                         var req = Req.of(content);
                         var resp = modes.get(req.mode()).process(req);
-                        out.write(("HTTP/1.1 " + resp.status() + " OK\r\n").getBytes());
+                        out.write(("HTTP/1.1 " + resp.status() + " OK\r\n\r\n").getBytes());
                         out.write(resp.text().getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
